@@ -1,14 +1,20 @@
 from pydantic import BaseModel
 
 
+class Filter(BaseModel):
+    categories: list[int] | None = None
+    limit: int = 10
+    page: int = 1
+
+
 class User(BaseModel):
     name: str
 
 
 class Good(BaseModel):
-    title: str
-    price: float
-    quantity: int
+    title: str | None = None
+    price: float | None = None
+    quantity: int | None = None
 
 
 class Category(BaseModel):
