@@ -11,8 +11,8 @@ class ReservedGood(Base):
     good_id = Column(Integer, ForeignKey('goods.id'))
     user_id = Column(Integer, ForeignKey('users.id'))
 
-    good = relationship(back_populates='user_associations')
-    user = relationship(back_populates='good_associations')
+    good = relationship('Good', back_populates='user_associations', viewonly=True)
+    user = relationship('User', back_populates='good_associations', viewonly=True)
 
     def __repr__(self):
         return f'<ReservedGood {self.id} {self.good.title} {self.user.name}>'

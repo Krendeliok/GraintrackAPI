@@ -12,12 +12,12 @@ class Good(Base):
     price = Column(Float)
     quantity = Column(Integer)
 
-    promotions = relationship('Promotion', back_populates='good')
-    categories = relationship(secondary="good_categories", back_populates='goods')
-    user_reservations = relationship(secondary='reserved_goods', back_populates='goods')
+    promotions = relationship('Promotion', backref='good')
+    categories = relationship('Category', secondary="good_categories", back_populates='goods')
+    user_reservations = relationship('User', secondary="reserved_goods", back_populates='reserved_goods')
 
-    category_association = relationship(back_populates='good')
-    user_association = relationship(back_populates='good')
+    category_associations = relationship('GoodCategory', back_populates='good', viewonly=True)
+    user_associations = relationship('ReservedGood', back_populates='good', viewonly=True)
 
     def __repr__(self):
         return f'<Good {self.title}>'

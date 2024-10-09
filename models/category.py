@@ -11,9 +11,9 @@ class Category(Base):
     name = Column(String)
     category_id = Column(Integer, nullable=True)
 
-    goods = relationship(secondary="good_categories", back_populates='category')
+    goods = relationship('Good', secondary="good_categories", back_populates='categories')
 
-    good_associations = relationship(back_populates='category')
+    good_associations = relationship('GoodCategory', back_populates='category', viewonly=True)
 
     def __repr__(self):
         return f'<Category {self.name}>'
