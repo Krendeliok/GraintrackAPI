@@ -1,10 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Filter(BaseModel):
     categories: list[int] | None = None
-    limit: int = 10
-    page: int = 1
+    limit: int = Field(ge=1, default=10)
+    page: int = Field(ge=1, default=1)
+
+    @property
+    def offset(self):
+        return (self.page - 1) * self.limit
 
 
 class User(BaseModel):
@@ -12,9 +16,17 @@ class User(BaseModel):
 
 
 class Good(BaseModel):
-    title: str | None = None
-    price: float | None = None
-    quantity: int | None = None
+    title: str | None
+    price: float | None
+    quantity: int | None = Field(ge=0)
+    category_id: int | None
+
+
+class UpdateGood(Good):
+    title: str = None
+    price: float = None
+    quantity: int = Field(ge=0, default=None)
+    category_id: int = None
 
 
 class Category(BaseModel):
@@ -24,7 +36,7 @@ class Category(BaseModel):
 
 class Promotion(BaseModel):
     good_id: int
-    discount: float
+    discount: float = Field(ge=0, le=100)
 
 
 class ReservedGood(BaseModel):

@@ -3,28 +3,26 @@ from fastapi import Depends, HTTPException
 from schemas import ReservedGood as ReservedGoodSchema
 from sqlalchemy.orm import Session
 
-from models import ReservedGood, User, Good
 from api import get_db
 
 
+from services.goods_service import good_exists, check_good_quantity_mt
+from services.reserve_service import user_exists, create_reservation, reservation_exists, delete_reservation
+
+
 async def reserve_good(reserved_good_body: ReservedGoodSchema, db: Session = Depends(get_db)):
-    user = db.query(User).get(reserved_good_body.user_id)
-    if not user:
+    if not user_exists(db, reserved_good_body.user_id):
         raise HTTPException(status_code=404, detail=f"User with id '{reserved_good_body.user_id}' not found")
-    good = db.query(Good).get(reserved_good_body.good_id)
-    if not good:
+    if not good_exists(db, reserved_good_body.good_id):
         raise HTTPException(status_code=404, detail=f"Good with id '{reserved_good_body.good_id}' not found")
-    reserved_good = ReservedGood(**reserved_good_body.model_dump())
-    db.add(reserved_good)
-    db.commit()
-    db.refresh(reserved_good)
+    if not check_good_quantity_mt(db, reserved_good_body.good_id, 0):
+        raise HTTPException(status_code=400, detail=f"Good with id '{reserved_good_body.good_id}' is out of stock")
+    reserved_good = create_reservation(db, reserved_good_body)
     return reserved_good.as_dict()
 
 
 async def unreserve_good(reservation_id: int, db: Session = Depends(get_db)):
-    reservation = db.query(ReservedGood).get(reservation_id)
-    if not reservation:
+    if not reservation_exists(db, reservation_id):
         raise HTTPException(status_code=404, detail=f"Reservation with id '{reservation_id}' not found")
-    db.delete(reservation)
-    db.commit()
-    return reservation.as_dict()
+    deleted_reservation = delete_reservation(db, reservation_id)
+    return deleted_reservation.as_dict()
